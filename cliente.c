@@ -38,7 +38,7 @@ static void send_simple_command(unsigned char command, const char *sender, const
     safe_copy(packet.sender, sizeof(packet.sender), sender);
     safe_copy(packet.target, sizeof(packet.target), target);
     safe_copy(packet.payload, sizeof(packet.payload), payload);
-    packet.payload_len = (uint16_t) strnlen(packet.payload, sizeof(packet.payload));
+    packet.payload_len = (uint16_t) strlen(packet.payload);
 
     if (send_packet(sockfd_global, &packet) != 0) {
         perror("send");

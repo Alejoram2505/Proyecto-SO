@@ -47,7 +47,7 @@ static void fill_server_packet(ChatPacket *packet, unsigned char command, const 
     safe_copy(packet->sender, sizeof(packet->sender), "SERVER");
     safe_copy(packet->target, sizeof(packet->target), target);
     safe_copy(packet->payload, sizeof(packet->payload), payload);
-    packet->payload_len = (uint16_t) strnlen(packet->payload, sizeof(packet->payload));
+    packet->payload_len = (uint16_t) strlen(packet->payload);
 }
 
 static int send_server_packet(int sockfd, unsigned char command, const char *target, const char *payload) {
@@ -239,7 +239,7 @@ static void broadcast_message(const char *sender, const char *message) {
     safe_copy(packet.sender, sizeof(packet.sender), sender);
     safe_copy(packet.target, sizeof(packet.target), "ALL");
     safe_copy(packet.payload, sizeof(packet.payload), message);
-    packet.payload_len = (uint16_t) strnlen(packet.payload, sizeof(packet.payload));
+    packet.payload_len = (uint16_t) strlen(packet.payload);
 
     pthread_mutex_lock(&mutex_lista);
     for (i = 0; i < MAX_CLIENTES; i++) {
@@ -267,7 +267,7 @@ static int send_direct_message(const char *sender, const char *target, const cha
     safe_copy(packet.sender, sizeof(packet.sender), sender);
     safe_copy(packet.target, sizeof(packet.target), target);
     safe_copy(packet.payload, sizeof(packet.payload), message);
-    packet.payload_len = (uint16_t) strnlen(packet.payload, sizeof(packet.payload));
+    packet.payload_len = (uint16_t) strlen(packet.payload);
 
     return send_packet(target_fd, &packet);
 }
