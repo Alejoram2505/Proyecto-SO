@@ -1,0 +1,99 @@
+PROYECTO CHAT - COMANDOS DE PRUEBA
+
+========================================
+1. CORRER MI SERVER EN MI INSTANCIA
+========================================
+
+cd ~/Proyecto-SO
+./servidor 5000
+
+
+========================================
+2. CORRER MI CLIENTE DESDE MI INSTANCIA
+========================================
+
+cd ~/Proyecto-SO
+./cliente nina 127.0.0.1 5000
+
+
+
+========================================
+3. CORRER MI CLIENTE HACIA OTRO SERVER
+========================================
+
+Server del otro grupo:
+IP: 18.218.119.204 (ip angel)
+Puerto: 5000
+
+cd ~/Proyecto-SO
+./cliente nina 18.218.119.204 5000
+
+
+========================================
+4. COMANDO QUE USARIAN MIS COMPAÑEROS
+PARA CONECTARSE A MI SERVER
+========================================
+
+Mi server:
+IP: 16.58.30.16
+Puerto: 5000
+
+cd ~/Proyecto-SO
+./cliente NOMBRE_USUARIO 16.58.30.16 5000
+
+Ejemplos:
+./cliente Angel 16.58.30.16 5000
+./cliente Gabi 16.58.30.16 5000
+./cliente Juan 16.58.30.16 5000
+
+
+========================================
+5. COMANDOS PARA PROBAR TODAS LAS FUNCIONES
+========================================
+
+/help
+
+/list
+
+/status BUSY
+
+/info nina
+
+/broadcast hola a todos
+
+/msg Angel hola
+
+/status ACTIVE
+
+/exit
+
+
+========================================
+6. PRUEBA COMPLETA ENTRE 2 CLIENTES
+========================================
+
+CLIENTE 1:
+./cliente nina 16.58.30.16 5000
+
+CLIENTE 2:
+./cliente Angel 16.58.30.16 5000
+
+Luego probar:
+
+En cliente 1:
+ /list
+ /status BUSY
+ /info Angel
+ /broadcast hola a todos
+ /msg Angel hola Angel
+
+En cliente 2:
+ /list
+ /info nina
+ /msg nina hola nina
+ /status ACTIVE
+
+Para salir:
+ /exit
+
+
