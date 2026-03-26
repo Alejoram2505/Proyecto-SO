@@ -14,6 +14,7 @@ static char estado_actual[16] = STATUS_ACTIVO;
 static char usuario_actual[32];
 static int sockfd_global = -1;
 
+// Muestra el menú de comandos disponibles para el usuario cliente.
 static void print_help(void) {
     printf("Comandos disponibles:\n");
     printf("  /broadcast <mensaje>\n");
@@ -25,12 +26,14 @@ static void print_help(void) {
     printf("  /exit\n");
 }
 
+// Cambia el estado local del cliente de forma thread-safe usando mutex.
 static void set_status_local(const char *status) {
     pthread_mutex_lock(&estado_mutex);
     safe_copy(estado_actual, sizeof(estado_actual), status);
     pthread_mutex_unlock(&estado_mutex);
 }
 
+// Empaqueta y envía un comando al servidor con sender, target y payload.
 static void send_simple_command(unsigned char command, const char *sender, const char *target, const char *payload) {
     ChatPacket packet;
 
@@ -46,6 +49,7 @@ static void send_simple_command(unsigned char command, const char *sender, const
     }
 }
 
+// Hilo que recibe paquetes del servidor y los imprime en pantalla.
 static void *receiver_thread(void *arg) {
     (void) arg;
 
@@ -103,6 +107,7 @@ static void *receiver_thread(void *arg) {
     return NULL;
 }
 
+// Función principal: parsea argumentos, conecta con servidor y procesa comandos desde stdin.
 int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
     pthread_t receiver_tid;

@@ -33,6 +33,7 @@ static pthread_mutex_t mutex_lista = PTHREAD_MUTEX_INITIALIZER;
 static volatile sig_atomic_t servidor_activo = 1;
 static int listen_fd = -1;
 
+// Maneja señales SIGINT/SIGTERM para apagar de forma segura el servidor.
 static void handle_signal(int signal_number) {
     (void) signal_number;
     servidor_activo = 0;
@@ -42,6 +43,7 @@ static void handle_signal(int signal_number) {
     }
 }
 
+// Llena un paquete como si viniera del servidor (sender = SERVER).
 static void fill_server_packet(ChatPacket *packet, unsigned char command, const char *target, const char *payload) {
     init_packet(packet, command);
     safe_copy(packet->sender, sizeof(packet->sender), "SERVER");
@@ -50,12 +52,14 @@ static void fill_server_packet(ChatPacket *packet, unsigned char command, const 
     packet->payload_len = (uint16_t) strlen(packet->payload);
 }
 
+// Envía un paquete servidor pre-armado al socket cliente especificado.
 static int send_server_packet(int sockfd, unsigned char command, const char *target, const char *payload) {
     ChatPacket packet;
     fill_server_packet(&packet, command, target, payload);
     return send_packet(sockfd, &packet);
 }
 
+// Construye la cadena de usuarios activos con estados para /list.
 static int build_user_list(char *buffer, size_t buffer_size) {
     size_t used = 0;
     int first = 1;
@@ -87,6 +91,7 @@ static int build_user_list(char *buffer, size_t buffer_size) {
     return 0;
 }
 
+// Registra cliente nuevo en lista si no hay duplicados y hay espacio.
 static int register_client(const char *username, const char *ip, int sockfd) {
     int free_index = -1;
     int i;
@@ -120,6 +125,7 @@ static int register_client(const char *username, const char *ip, int sockfd) {
     return 0;
 }
 
+// Actualiza el timestamp de actividad y vuelve a ACTIVO si estaba INACTIVO.
 static int update_client_activity(const char *username) {
     int i;
 
@@ -139,6 +145,7 @@ static int update_client_activity(const char *username) {
     return -1;
 }
 
+// Cambia el estado de un cliente específico y actualiza su último mensaje.
 static int set_client_status(const char *username, const char *status) {
     int i;
 
@@ -156,6 +163,7 @@ static int set_client_status(const char *username, const char *status) {
     return -1;
 }
 
+// Obtiene IP y estado de un cliente por nombre (usado por comando /info).
 static int get_client_info(const char *username, char *ip, size_t ip_size, char *status, size_t status_size) {
     int i;
 
@@ -173,6 +181,7 @@ static int get_client_info(const char *username, char *ip, size_t ip_size, char 
     return -1;
 }
 
+// Busca y retorna socket de cliente por nombre (o -1 si no existe).
 static int get_client_socket(const char *username) {
     int i;
     int sockfd = -1;
@@ -189,6 +198,7 @@ static int get_client_socket(const char *username) {
     return sockfd;
 }
 
+// Notifica a todos los clientes activos que un usuario se desconectó.
 static void notify_disconnection(const char *username) {
     ChatPacket packet;
     int sockets[MAX_CLIENTES];
@@ -210,6 +220,7 @@ static void notify_disconnection(const char *username) {
     }
 }
 
+// Elimina al cliente de la lista y opcionalmente notifica al resto.
 static void remove_client(const char *username, int notify) {
     int i;
     int found = 0;
@@ -229,6 +240,7 @@ static void remove_client(const char *username, int notify) {
     }
 }
 
+// Envía mensaje de chat a todos los clientes conectados.
 static void broadcast_message(const char *sender, const char *message) {
     ChatPacket packet;
     int sockets[MAX_CLIENTES];
@@ -254,6 +266,7 @@ static void broadcast_message(const char *sender, const char *message) {
     }
 }
 
+// Envía mensaje solo al cliente target; retorna -1 si no existe target.
 static int send_direct_message(const char *sender, const char *target, const char *message) {
     ChatPacket packet;
     int target_fd;
@@ -272,6 +285,7 @@ static int send_direct_message(const char *sender, const char *target, const cha
     return send_packet(target_fd, &packet);
 }
 
+// Hilo que monitoriza inactividad y cambia estado a INACTIVO tras timeout.
 static void *inactivity_thread(void *arg) {
     (void) arg;
 
@@ -308,6 +322,7 @@ static void *inactivity_thread(void *arg) {
     return NULL;
 }
 
+// Hilo por cliente que procesa comandos recibidos del cliente conectado.
 static void *client_thread(void *arg) {
     ThreadArgs *thread_args = (ThreadArgs *) arg;
     int sockfd = thread_args->sockfd;
@@ -422,6 +437,7 @@ static void *client_thread(void *arg) {
     return NULL;
 }
 
+// Función principal: arranca servidor TCP, acepta conexiones y crea hilos.
 int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
     pthread_t timeout_tid;
